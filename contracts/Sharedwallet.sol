@@ -3,11 +3,17 @@ pragma solidity ^0.8.3;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-
 contract Allowance is Ownable {
-
+    
+    address allowanceAddress = address(this);
+    
     event AllowanceChanged(address indexed _forWho, address indexed _byWhom, uint _oldAmount, uint _newAmount);
-
+    
+    
+    function allowanceBalance() public view returns(uint) {
+        return address(this).balance;
+    }
+    
     // view who the owner of the contract is
     function isOwner() internal view returns(bool) {
         return owner() == msg.sender;
@@ -16,9 +22,9 @@ contract Allowance is Ownable {
     mapping(address => uint) public allowance;
     
     //add allowance to recipient
-    function addAllowance(address _who, uint _amount) public onlyOwner {
-        AllowanceChanged(_who, msg.sender, allowance[_who], allowance[_who] + _amount);
-        allowance[_who] += _amount;
+    function addAllowance(address _who) public payable onlyOwner {
+        AllowanceChanged(_who, msg.sender, allowance[_who], allowance[_who] + msg.value);
+        allowance[_who] += msg.value;
     }
     
     // reduce allowance from recipient on withdrawal, function is private
@@ -41,16 +47,15 @@ contract SharedWallet is Allowance {
     event MoneySent(address indexed _beneficiary, uint _amount);
     event MoneyReceived(address indexed _from, uint _amount);
     
+    function walletBalance() public view returns(uint) {
+        return address(this).balance;
+    }
+
     // withdrawal function with instructions 
     function withdrawMoney(address payable _to, uint _amount) public ownerOrAllowed(_amount) {
         require(_amount <= address(this).balance, "Contract doesn't own enough funds");
-        
-        if (!isOwner()) {
-            reduceAllowance(msg.sender, _amount);
-        }
-
+        reduceAllowance(_to, _amount);
         MoneySent(msg.sender, _amount);
-        
         _to.transfer(_amount);
     }
 
