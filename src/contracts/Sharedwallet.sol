@@ -24,6 +24,7 @@ contract Allowance is Ownable {
     // reduce allowance from recipient on withdrawal, function is private
     function reduceAllowance(address _who, uint _amount) internal ownerOrAllowed(_amount) {
         AllowanceChanged(_who, msg.sender, allowance[_who], allowance[_who] - _amount);
+        //no need to use same math to prevent overflow as sol is >= 0.8
         allowance[_who] -= _amount;
     }
     
@@ -51,6 +52,10 @@ contract SharedWallet is Allowance {
         MoneySent(msg.sender, _amount);
         
         _to.transfer(_amount);
+    }
+
+    function renounceOwnership() public virtual override onlyOwner {
+        revert("can't renounceOwnership here"); //not possible with this smart contract
     }
 
     receive() external payable {
