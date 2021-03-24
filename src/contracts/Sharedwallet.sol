@@ -1,15 +1,23 @@
 //SPDX-License-Identifier: MIT
+pragma solidity ^0.8.3;
 
-pragma solidity ^0.7.4;
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract SharedWallet {
+contract SharedWallet is Ownable {
+    
+    // view who the owner of the contract is
+    function isOwner() internal view returns(bool) {
+        return owner() == msg.sender;
+    }
+
     
     // withdrawal function with instructions 
-    function withdrawalMoney(address payable _to, uint _amount) public {
+    function withdrawMoney(address payable _to, uint _amount) public onlyOwner {
         _to.transfer(_amount);
     }
 
     receive() external payable {
         
     }
+    
 }
