@@ -3,8 +3,9 @@ pragma solidity ^0.8.3;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract SharedWallet is Ownable {
-    
+
+contract Allowance is Ownable {
+
     // view who the owner of the contract is
     function isOwner() internal view returns(bool) {
         return owner() == msg.sender;
@@ -27,6 +28,10 @@ contract SharedWallet is Ownable {
         require(isOwner() || allowance[msg.sender] >= _amount, "You are not allowed");
         _;
     }
+    
+}
+
+contract SharedWallet is Allowance {
     
     // withdrawal function with instructions 
     function withdrawMoney(address payable _to, uint _amount) public ownerOrAllowed(_amount) {
